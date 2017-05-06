@@ -4,6 +4,7 @@ import elemental2.dom.Event;
 import elemental2.dom.EventListener;
 import elemental2.dom.EventTarget;
 import elemental2.dom.KeyboardEvent;
+import elemental2.dom.TouchEvent;
 import jsinterop.base.Js;
 import rx.Emitter;
 import rx.Observable;
@@ -14,6 +15,10 @@ public interface RxElemental2 {
 
     EType<KeyboardEvent> keydown = new EType<>("keydown");
     EType<KeyboardEvent> keyup = new EType<>("keyup");
+    EType<TouchEvent> touchstart = new EType<>("touchstart");
+    EType<TouchEvent> touchmove = new EType<>("touchmove");
+    EType<TouchEvent> touchcancel = new EType<>("touchcancel");
+    EType<TouchEvent> touchend = new EType<>("touchend");
 
     static Observable<Event> fromEvent(EventTarget element, String type) {
         return fromEvent(element, type, false);

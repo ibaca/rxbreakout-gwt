@@ -1,10 +1,18 @@
 package breakout.client;
 
+import static breakout.client.RxElemental2.fromEvent;
 import static breakout.client.RxElemental2.keydown;
+import static breakout.client.RxElemental2.touchcancel;
+import static breakout.client.RxElemental2.touchend;
+import static breakout.client.RxElemental2.touchmove;
+import static breakout.client.RxElemental2.touchstart;
 import static elemental2.dom.DomGlobal.document;
+import static elemental2.dom.DomGlobal.window;
 import static java.lang.Double.NaN;
+import static java.lang.Double.min;
 import static rx.Observable.empty;
 import static rx.Observable.just;
+import static rx.Observable.merge;
 
 import com.google.gwt.core.client.EntryPoint;
 import elemental2.core.Date;
@@ -17,9 +25,11 @@ import elemental2.media.AudioContext;
 import elemental2.media.OscillatorNode;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -40,10 +50,12 @@ public class Breakout implements EntryPoint {
         // Graphics
 
         HTMLCanvasElement canvas = Js.cast(document.getElementById("stage"));
+        canvas.width = min(window.innerWidth - 22, 800);
         CanvasRenderingContext2D context = Js.cast(canvas.getContext("2d"));
         HTMLPreElement debug = Js.cast(document.getElementById("state"));
+        boolean mobile = window.navigator.userAgent.contains("Mobi");
 
-        context.fillStyle = FillStyleUnionType.of("pink");
+        context.fillStyle = FillStyleUnionType.of("hotpink");
         int PADDLE_WIDTH = 100;
         int PADDLE_HEIGHT = 20;
 
@@ -82,13 +94,13 @@ public class Breakout implements EntryPoint {
             context.fillText("JS version by Manuel Wieser", canvas.width / 2, canvas.height / 2 + 40);
         };
 
-        Consumer<Integer> drawScore = score -> {
+        IntConsumer drawScore = score -> {
             context.textAlign = "left";
             context.font = "16px Courier New";
             context.fillText(Integer.toString(score), BRICK_GAP, 16);
         };
 
-        Consumer<Double> drawPaddle = position -> {
+        DoubleConsumer drawPaddle = position -> {
             context.beginPath();
             context.rect(
                     position - PADDLE_WIDTH / 2,
@@ -191,12 +203,12 @@ public class Breakout implements EntryPoint {
 
         int PADDLE_SPEED = 240;
 
-        Function<String, Observable<Integer>> untilUp = code -> RxElemental2.fromEvent(document, RxElemental2.keyup)
+        Function<String, Observable<Integer>> untilUp = code -> fromEvent(document, RxElemental2.keyup)
                 .filter(up -> Objects.equals(up.code, code))
                 .map(up -> 0);
 
-        Observable<Integer> input$ =
-                RxElemental2.fromEvent(document, keydown).switchMap(down -> {
+        Observable<Integer> direction$ = RxElemental2
+                .fromEvent(document, keydown).switchMap(down -> {
                     switch (down.code) {
                         case "ArrowLeft": return just(-1).concatWith(untilUp.apply(down.code));
                         case "ArrowRight": return just(1).concatWith(untilUp.apply(down.code));
@@ -204,11 +216,17 @@ public class Breakout implements EntryPoint {
                     }
                 }).distinctUntilChanged();
 
-        Observable<Double> paddle$ = ticker$
-                .withLatestFrom(input$, (ticker, direction) -> direction * ticker.delta * PADDLE_SPEED)
-                .scan(canvas.width / 2, (position, move) -> {
-                    return Math.max(Math.min(position + move, canvas.width - PADDLE_WIDTH / 2), PADDLE_WIDTH / 2);
-                }).skip(1/*ignore initial value*/)
+        Observable<Double> keyboardPosition$ = ticker$
+                .withLatestFrom(direction$, (ticker, direction) -> direction * ticker.delta * PADDLE_SPEED)
+                .scan(canvas.width / 2, (position, move) -> position + move).skip(1/*ignore initial value*/);
+
+        Observable<Double> touchPosition$ = fromEvent(document, touchstart)
+                .switchMap(start -> fromEvent(document, touchmove)
+                        .filter(e -> e.touches.length > 0).map(e -> e.touches.getAt(0).clientX)
+                        .takeUntil(merge(fromEvent(document, touchcancel), fromEvent(document, touchend))));
+
+        Observable<Double> paddle$ = merge(keyboardPosition$, touchPosition$)
+                .map(position -> Math.max(Math.min(position, canvas.width - PADDLE_WIDTH / 2), PADDLE_WIDTH / 2))
                 .distinctUntilChanged();
 
         // Bricks
@@ -227,7 +245,7 @@ public class Breakout implements EntryPoint {
             }).toArray(Brick[]::new);
         };
 
-        BiFunction<Brick, Ball, Boolean> collision = (brick, ball) -> {
+        BiPredicate<Brick, Ball> collision = (brick, ball) -> {
             return ball.position.x + ball.direction.x > brick.x - brick.width / 2
                     && ball.position.x + ball.direction.x < brick.x + brick.width / 2
                     && ball.position.y + ball.direction.y > brick.y - brick.height / 2
@@ -264,8 +282,12 @@ public class Breakout implements EntryPoint {
                 return "State{" +
                         "\n  tick=" + tick +
                         ", \n  paddle=" + paddle +
-                        ", \n  ball=" + ball +
-                        ", \n  collisions=" + collisions +
+                        ", \n  ball.position=" + ball.position +
+                        ", \n  ball.direction=" + ball.direction +
+                        ", \n  collisions.paddle=" + collisions.paddle +
+                        ", \n  collisions.wall=" + collisions.wall +
+                        ", \n  collisions.ceiling=" + collisions.ceiling +
+                        ", \n  collisions.brick=" + collisions.brick +
                         ", \n  score=" + score +
                         "\n}";
             }
@@ -300,7 +322,7 @@ public class Breakout implements EntryPoint {
 
                     out.collisions = new Collisions();
                     out.bricks = Stream.of(state.bricks).filter(brick -> {
-                        if (!collision.apply(brick, out.ball)) {
+                        if (!collision.test(brick, out.ball)) {
                             return true;
                         } else {
                             out.ball.direction.y *= -1;
@@ -344,7 +366,7 @@ public class Breakout implements EntryPoint {
             drawBall.accept(game.ball);
             drawBricks.accept(game.bricks);
             drawScore.accept(game.score);
-            drawState.accept(game.toString());
+            if (!mobile) drawState.accept(game.toString());
 
             if (game.ball.position.y > canvas.height - BALL_RADIUS) {
                 beeper.onNext(28);
@@ -371,13 +393,11 @@ public class Breakout implements EntryPoint {
             drawAuthor.run();
 
             // the 'backpressureLatest' assert that the 'sample' do not sent any last event after unsubscription
-            return state$.sample(TICKER_INTERVAL, TimeUnit.MILLISECONDS).onBackpressureLatest().takeUntil(update);
+            return state$.takeUntil(update);
         });
 
-        RxElemental2.fromEvent(document, keydown).map(event -> event.code)
-                .filter(code -> Objects.equals(code, "Space"))
-                .startWith("Loaded")
-                .switchMap(n -> game$)
-                .subscribe();
+        game$.toCompletable()
+                .andThen(merge(fromEvent(document, keydown), fromEvent(document, touchstart)).take(1))
+                .repeat().subscribe();
     }
 }
