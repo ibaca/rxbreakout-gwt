@@ -49,7 +49,7 @@
         <dependency>
             <groupId>com.intendia.gwt.rxgwt</groupId>
             <artifactId>rxgwt</artifactId>
-            <version>HEAD-SNAPSHOT</version>
+            <version>0.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.elemental2</groupId>
@@ -79,10 +79,10 @@
                     <moduleName>breakout.Breakout</moduleName>
                     <skipModule>true</skipModule>
                     <failOnError>true</failOnError>
-                    <devmodeArgs>
-                        <arg>-bindAddress</arg>
-                        <arg>0.0.0.0</arg>
-                    </devmodeArgs>
+                    <devmodeArgs><!-- @formatter:off -->
+                        <arg>-bindAddress</arg><arg>0.0.0.0</arg>
+                        <arg>-style</arg><arg>PRETTY</arg>
+                    </devmodeArgs><!-- @formatter:on -->
                     <startupUrls>
                         <url>/breakout/</url>
                     </startupUrls>
