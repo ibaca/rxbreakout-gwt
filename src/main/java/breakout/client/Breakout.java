@@ -1,21 +1,22 @@
 package breakout.client;
 
-import static com.intendia.rxgwt.elemental2.RxElemental2.fromEvent;
-import static com.intendia.rxgwt.elemental2.RxElemental2.keydown;
-import static com.intendia.rxgwt.elemental2.RxElemental2.touchcancel;
-import static com.intendia.rxgwt.elemental2.RxElemental2.touchend;
-import static com.intendia.rxgwt.elemental2.RxElemental2.touchmove;
-import static com.intendia.rxgwt.elemental2.RxElemental2.touchstart;
+import static com.intendia.rxgwt.elemento.RxElemento.fromEvent;
 import static elemental2.dom.DomGlobal.document;
 import static elemental2.dom.DomGlobal.window;
 import static java.lang.Double.NaN;
 import static java.lang.Double.min;
+import static org.jboss.gwt.elemento.core.EventType.keydown;
+import static org.jboss.gwt.elemento.core.EventType.keyup;
+import static org.jboss.gwt.elemento.core.EventType.touchcancel;
+import static org.jboss.gwt.elemento.core.EventType.touchend;
+import static org.jboss.gwt.elemento.core.EventType.touchmove;
+import static org.jboss.gwt.elemento.core.EventType.touchstart;
 import static rx.Observable.empty;
 import static rx.Observable.just;
 import static rx.Observable.merge;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.intendia.rxgwt.elemental2.RxElemental2;
+import com.intendia.rxgwt.elemento.RxElemento;
 import elemental2.core.Date;
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.CanvasRenderingContext2D.FillStyleUnionType;
@@ -204,11 +205,11 @@ public class Breakout implements EntryPoint {
 
         int PADDLE_SPEED = 240;
 
-        Function<String, Observable<Integer>> untilUp = code -> fromEvent(document, RxElemental2.keyup)
+        Function<String, Observable<Integer>> untilUp = code -> RxElemento.fromEvent(document, keyup)
                 .filter(up -> Objects.equals(up.code, code))
                 .map(up -> 0);
 
-        Observable<Integer> direction$ = RxElemental2
+        Observable<Integer> direction$ = RxElemento
                 .fromEvent(document, keydown).switchMap(down -> {
                     switch (down.code) {
                         case "ArrowLeft": return just(-1).concatWith(untilUp.apply(down.code));
