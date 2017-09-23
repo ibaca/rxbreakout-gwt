@@ -1,8 +1,11 @@
 package breakout.client;
 
-import static com.intendia.rxgwt.elemento.RxElemento.fromEvent;
+import static com.intendia.rxgwt2.elemento.RxElemento.fromEvent;
 import static elemental2.dom.DomGlobal.document;
 import static elemental2.dom.DomGlobal.window;
+import static io.reactivex.Observable.empty;
+import static io.reactivex.Observable.just;
+import static io.reactivex.Observable.merge;
 import static java.lang.Double.NaN;
 import static java.lang.Double.min;
 import static org.jboss.gwt.elemento.core.EventType.keydown;
@@ -11,12 +14,9 @@ import static org.jboss.gwt.elemento.core.EventType.touchcancel;
 import static org.jboss.gwt.elemento.core.EventType.touchend;
 import static org.jboss.gwt.elemento.core.EventType.touchmove;
 import static org.jboss.gwt.elemento.core.EventType.touchstart;
-import static rx.Observable.empty;
-import static rx.Observable.just;
-import static rx.Observable.merge;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.intendia.rxgwt.elemento.RxElemento;
+import com.intendia.rxgwt2.elemento.RxElemento;
 import elemental2.core.Date;
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.CanvasRenderingContext2D.FillStyleUnionType;
@@ -25,6 +25,9 @@ import elemental2.dom.HTMLPreElement;
 import elemental2.media.AudioBufferSourceNode;
 import elemental2.media.AudioContext;
 import elemental2.media.OscillatorNode;
+import io.reactivex.Observable;
+import io.reactivex.functions.Predicate;
+import io.reactivex.subjects.PublishSubject;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
@@ -36,9 +39,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import jsinterop.base.Js;
-import rx.Observable;
-import rx.functions.Func1;
-import rx.subjects.PublishSubject;
 
 /**
  * Another remake of https://en.wikipedia.org/wiki/Breakout_(video_game)
@@ -361,7 +361,7 @@ public class Breakout implements EntryPoint {
 
         // Game
 
-        Func1<State, Boolean> update = game -> {
+        Predicate<State> update = game -> {
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             drawPaddle.accept(game.paddle);
@@ -398,7 +398,7 @@ public class Breakout implements EntryPoint {
             return state$.takeUntil(update);
         });
 
-        game$.toCompletable()
+        game$.ignoreElements()
                 .andThen(merge(fromEvent(document, keydown), fromEvent(document, touchstart)).take(1))
                 .repeat().subscribe();
     }

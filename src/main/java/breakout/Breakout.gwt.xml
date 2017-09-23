@@ -2,7 +2,7 @@
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.8.0//EN" "http://gwtproject.org/doctype/2.8.0/gwt-module.dtd">
 <module rename-to="breakout">
     <inherits name="com.google.gwt.core.Core"/>
-    <inherits name="com.intendia.rxgwt.RxElemento"/>
+    <inherits name="com.intendia.rxgwt2.RxElemento"/>
     <inherits name="elemental2.media.Media"/>
     <inherits name="elemental2.webstorage.WebStorage"/>
     <entry-point class="breakout.client.Breakout"/>
