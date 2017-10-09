@@ -52,7 +52,6 @@ public class Breakout implements EntryPoint {
         // Graphics
 
         HTMLCanvasElement canvas = Js.cast(document.getElementById("stage"));
-        canvas.width = min(window.innerWidth - 22, 800);
         CanvasRenderingContext2D context = Js.cast(canvas.getContext("2d"));
         HTMLPreElement debug = Js.cast(document.getElementById("state"));
         boolean mobile = window.navigator.userAgent.contains("Mobi");
