@@ -7,7 +7,6 @@ import static io.reactivex.Observable.empty;
 import static io.reactivex.Observable.just;
 import static io.reactivex.Observable.merge;
 import static java.lang.Double.NaN;
-import static java.lang.Double.min;
 import static org.jboss.gwt.elemento.core.EventType.keydown;
 import static org.jboss.gwt.elemento.core.EventType.keyup;
 import static org.jboss.gwt.elemento.core.EventType.touchcancel;
@@ -17,7 +16,7 @@ import static org.jboss.gwt.elemento.core.EventType.touchstart;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.intendia.rxgwt2.elemento.RxElemento;
-import elemental2.core.Date;
+import elemental2.core.JsDate;
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.CanvasRenderingContext2D.FillStyleUnionType;
 import elemental2.dom.HTMLCanvasElement;
@@ -196,7 +195,7 @@ public class Breakout implements EntryPoint {
 
         Observable<Tick> ticker$ = Observable
                 .interval(TICKER_INTERVAL, TimeUnit.MILLISECONDS) //TODO Rx.Scheduler.requestAnimationFrame
-                .map(n -> new Tick(Date.now(), NaN))
+                .map(n -> new Tick(JsDate.now(), NaN))
                 .scan((previous, current) -> new Tick(current.time, (current.time - previous.time) / 1000))
                 .skip(1/*ignore initial value*/);
 
@@ -219,7 +218,7 @@ public class Breakout implements EntryPoint {
 
         Observable<Double> keyboardPosition$ = ticker$
                 .withLatestFrom(direction$, (ticker, direction) -> direction * ticker.delta * PADDLE_SPEED)
-                .scan(canvas.width / 2, (position, move) -> position + move).skip(1/*ignore initial value*/);
+                .scan(canvas.width / 2., (position, move) -> position + move).skip(1/*ignore initial value*/);
 
         Observable<Double> touchPosition$ = fromEvent(document, touchstart)
                 .switchMap(start -> fromEvent(document, touchmove)
