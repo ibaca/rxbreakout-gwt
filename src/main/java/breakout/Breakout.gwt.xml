@@ -1,10 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.8.1//EN" "http://gwtproject.org/doctype/2.8.1/gwt-module.dtd">
 <module rename-to="breakout">
-    <inherits name="com.google.gwt.user.User"/>
-    <inherits name="com.intendia.rxgwt2.RxElemento"/>
+    <inherits name="com.google.gwt.core.Core"/>
+    <inherits name="com.google.gwt.safehtml.SafeHtml"/>
+    <inherits name="com.google.web.bindery.event.Event"/>
     <inherits name="elemental2.media.Media"/>
     <inherits name="elemental2.webstorage.WebStorage"/>
+    <inherits name="io.reactivex.RxJava"/>
+    <inherits name="org.jboss.gwt.elemento.Core"/>
     <entry-point class="breakout.client.Breakout"/>
     <collapse-all-properties/>
 </module>

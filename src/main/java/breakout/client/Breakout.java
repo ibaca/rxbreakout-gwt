@@ -1,6 +1,5 @@
 package breakout.client;
 
-import static com.intendia.rxgwt2.elemento.RxElemento.fromEvent;
 import static elemental2.dom.DomGlobal.document;
 import static elemental2.dom.DomGlobal.window;
 import static io.reactivex.Observable.empty;
@@ -15,10 +14,12 @@ import static org.jboss.gwt.elemento.core.EventType.touchmove;
 import static org.jboss.gwt.elemento.core.EventType.touchstart;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.intendia.rxgwt2.elemento.RxElemento;
 import elemental2.core.JsDate;
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.CanvasRenderingContext2D.FillStyleUnionType;
+import elemental2.dom.Event;
+import elemental2.dom.EventListener;
+import elemental2.dom.EventTarget;
 import elemental2.dom.HTMLCanvasElement;
 import elemental2.dom.HTMLPreElement;
 import elemental2.media.AudioBufferSourceNode;
@@ -38,6 +39,7 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import jsinterop.base.Js;
+import org.jboss.gwt.elemento.core.EventType;
 
 /**
  * Another remake of https://en.wikipedia.org/wiki/Breakout_(video_game)
@@ -203,11 +205,11 @@ public class Breakout implements EntryPoint {
 
         int PADDLE_SPEED = 240;
 
-        Function<String, Observable<Integer>> untilUp = code -> RxElemento.fromEvent(document, keyup)
+        Function<String, Observable<Integer>> untilUp = code -> Breakout.fromEvent(document, keyup)
                 .filter(up -> Objects.equals(up.code, code))
                 .map(up -> 0);
 
-        Observable<Integer> direction$ = RxElemento
+        Observable<Integer> direction$ = Breakout
                 .fromEvent(document, keydown).switchMap(down -> {
                     switch (down.code) {
                         case "ArrowLeft": return just(-1).concatWith(untilUp.apply(down.code));
@@ -399,5 +401,13 @@ public class Breakout implements EntryPoint {
         game$.ignoreElements()
                 .andThen(merge(fromEvent(document, keydown), fromEvent(document, touchstart)).take(1))
                 .repeat().subscribe();
+    }
+
+    static <T extends Event> Observable<T> fromEvent(EventTarget src, EventType<T, ?> type) {
+        return Observable.create(s -> {
+            EventListener listener = value -> s.onNext(Js.cast(value));
+            src.addEventListener(type.getName(), listener, false);
+            s.setCancellable(() -> src.removeEventListener(type.getName(), listener, false));
+        });
     }
 }
