@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.jboss.gwt.elemento</groupId>
             <artifactId>elemento-core</artifactId>
-            <version>0.8.0</version>
+            <version>0.8.2-gwt2</version>
         </dependency>
         <dependency>
             <groupId>com.google.elemental2</groupId>
