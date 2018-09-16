@@ -40,14 +40,9 @@
             <artifactId>gwt-dev</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intendia.gwt</groupId>
-            <artifactId>rxjava2-gwt</artifactId>
+            <groupId>com.intendia.gwt.rxgwt2</groupId>
+            <artifactId>rxgwt</artifactId>
             <version>HEAD-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>io.reactivex.rxjava2</groupId>
-            <artifactId>rxjava</artifactId>
-            <version>2.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.gwt.elemento</groupId>
@@ -71,7 +66,7 @@
             <plugin>
                 <groupId>net.ltgt.gwt.maven</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
-                <version>1.0-rc-9</version>
+                <version>1.0-rc-10</version>
                 <extensions>true</extensions>
                 <configuration>
                     <moduleName>breakout.Breakout</moduleName>
