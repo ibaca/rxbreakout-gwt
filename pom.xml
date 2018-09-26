@@ -96,6 +96,26 @@
 
     <repositories>
         <repository>
+            <id>sonatype-snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>google-snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/google-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>rxjava-gwt-repo</id>
             <url>https://raw.githubusercontent.com/intendia-oss/rxjava-gwt/mvn-repo/</url>
         </repository>
